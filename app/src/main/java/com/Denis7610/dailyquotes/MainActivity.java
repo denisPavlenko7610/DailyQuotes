@@ -2,6 +2,7 @@ package com.Denis7610.dailyquotes;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -17,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton mPreviewButton;
     private TextView mQuoteCount;
     private TextView mTextQuote;
+    private ImageButton mShare;
+    private String textToShare;
     private int mNumber = 0;
 
     @Override
@@ -28,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
         mPreviewButton = (ImageButton) findViewById(R.id.previewButton);
         mTextQuote = (TextView) findViewById(R.id.textQuote);
         mQuoteCount = (TextView) findViewById(R.id.quoteCount);
+        mShare = (ImageButton) findViewById(R.id.share);
 
         mQuotes = getResources().getStringArray(R.array.quotes);
         List<String> list = Arrays.asList(mQuotes);
@@ -35,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         mQuotes = list.toArray(new String[list.size()]);
 
         mTextQuote.setText(mQuotes[mNumber]);
+        textToShare = mQuotes[mNumber];
+
         mQuoteCount.setText(getString(R.string.quoteCount) + mQuotes.length);
     }
 
@@ -42,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         if (mNumber != mQuotes.length) {
             mNumber++;
             mTextQuote.setText(mQuotes[mNumber]);
+            textToShare = mQuotes[mNumber];
         } else {
             mNumber = 0;
         }
@@ -51,6 +58,22 @@ public class MainActivity extends AppCompatActivity {
         if (mNumber != 0) {
             mNumber--;
             mTextQuote.setText(mQuotes[mNumber]);
+            textToShare = mQuotes[mNumber];
+        }
+    }
+
+    public void shareText(View view) {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, textToShare);
+        sendIntent.setType("text/plain");
+
+        String title = "Подулиться";
+
+        Intent chooser = Intent.createChooser(sendIntent, title);
+
+        if (sendIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(chooser);
         }
     }
 }

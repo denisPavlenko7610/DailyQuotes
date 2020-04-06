@@ -2,5 +2,5 @@
 <resources>
     <dimen name="nextButtonSize">14sp</dimen>
     <dimen name="textSize">22sp</dimen>
-    <dimen name="quoteCount">14sp</dimen>
+    <dimen name="quoteCount">12sp</dimen>
 </resources>
