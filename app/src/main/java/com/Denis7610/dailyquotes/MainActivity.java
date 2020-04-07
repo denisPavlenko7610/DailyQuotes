@@ -1,5 +1,6 @@
 package com.Denis7610.dailyquotes;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -10,6 +11,12 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.ads.consent.ConsentForm;
+import com.google.ads.consent.ConsentFormListener;
+import com.google.ads.consent.ConsentInfoUpdateListener;
+import com.google.ads.consent.ConsentInformation;
+import com.google.ads.consent.ConsentStatus;
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -17,11 +24,16 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    //ES policy
+    private ConsentForm form;
+    //ADMob
     private InterstitialAd mInterstitialAd;
 
     private String[] mQuotes;
@@ -33,10 +45,88 @@ public class MainActivity extends AppCompatActivity {
     private String textToShare;
     private int mNumber = 0;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //ES policy
+        ConsentInformation consentInformation = ConsentInformation.getInstance(getApplicationContext());
+        String[] publisherIds = {"pub-7173647303121367"};
+        consentInformation.requestConsentInfoUpdate(publisherIds, new ConsentInfoUpdateListener() {
+            @Override
+            public void onConsentInfoUpdated(ConsentStatus consentStatus) {
+                // User's consent status successfully updated.
+                boolean inEEA = ConsentInformation.getInstance(getApplicationContext()).isRequestLocationInEeaOrUnknown();
+
+                if (inEEA) {
+                    if (consentStatus == consentStatus.PERSONALIZED) {
+                        //no code
+                    } else if (consentStatus == consentStatus.NON_PERSONALIZED) {
+                        Bundle extras = new Bundle();
+                        extras.putString("npa", "1");
+
+                        AdRequest request = new AdRequest.Builder()
+                                .addNetworkExtrasBundle(AdMobAdapter.class, extras)
+                                .build();
+                    } else { //start code form
+
+                        URL privacyUrl = null;
+                        try {
+                            privacyUrl = new URL("https://wolfprogrammer.000webhostapp.com/");
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                            // Handle error.
+                        }
+                        form = new ConsentForm.Builder(MainActivity.this, privacyUrl)
+                                .withListener(new ConsentFormListener() {
+                                    @Override
+                                    public void onConsentFormLoaded() {
+                                        // Consent form loaded successfully.
+                                        form.show();
+                                    }
+
+                                    @Override
+                                    public void onConsentFormOpened() {
+                                        // Consent form was displayed.
+                                    }
+
+                                    @Override
+                                    public void onConsentFormClosed(
+                                            ConsentStatus consentStatus, Boolean userPrefersAdFree) {
+                                        // Consent form was closed.
+                                        if (consentStatus == ConsentStatus.NON_PERSONALIZED) {
+                                            Bundle extras = new Bundle();
+                                            extras.putString("npa", "1");
+
+                                            AdRequest request = new AdRequest.Builder()
+                                                    .addNetworkExtrasBundle(AdMobAdapter.class, extras)
+                                                    .build();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onConsentFormError(String errorDescription) {
+                                        // Consent form error.
+                                    }
+                                })
+                                .withPersonalizedAdsOption()
+                                .withNonPersonalizedAdsOption()
+                                .build();
+                        form.load();
+                    } //end code form
+                } else {
+                    //no code
+                }
+            }
+
+            @Override
+            public void onFailedToUpdateConsentInfo(String errorDescription) {
+                // User's consent status failed to update.
+            }
+        });
+
         // add advertisement
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
@@ -77,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
         textToShare = mQuotes[mNumber];
 
         //set count of quotes
+
         mQuoteCount.setText(getString(R.string.quote_count) + mQuotes.length);
     }
 
