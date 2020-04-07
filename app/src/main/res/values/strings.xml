@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name">Лучшие цитаты</string>
-    <string name="nextQuote">Следующая</string>
-    <string name="leftArrow">leftArrow</string>
-    <string name="rightArrow">rightArrow</string>
-    <string name="quoteCount">\Количество цитат: \</string>
+    <string name="next_quote">Следующая</string>
+    <string name="left_arrow">leftArrow</string>
+    <string name="right_arrow">rightArrow</string>
+    <string name="quote_count">\Количество цитат: \</string>
+    <string name="share_button">Share button</string>
 
     <string-array name="quotes">
         <!--        Konfuciy    -->
