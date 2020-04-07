@@ -1,6 +1,7 @@
 package com.Denis7610.dailyquotes;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
 
         //show advertisement when user close an app
-        mInterstitialAd.setAdListener(new AdListener(){
+        mInterstitialAd.setAdListener(new AdListener() {
             @Override
             public void onAdClosed() {
                 if (mInterstitialAd.isLoaded()) {
@@ -59,11 +60,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //find resources
-        mNextButton = (ImageButton) findViewById(R.id.nextButton);
-        mPreviewButton = (ImageButton) findViewById(R.id.previewButton);
-        mTextQuote = (TextView) findViewById(R.id.textQuote);
-        mQuoteCount = (TextView) findViewById(R.id.quoteCount);
-        mShare = (ImageButton) findViewById(R.id.share);
+        mNextButton = findViewById(R.id.nextButton);
+        mPreviewButton = findViewById(R.id.previewButton);
+        mTextQuote = findViewById(R.id.textQuote);
+        mQuoteCount = findViewById(R.id.quoteCount);
+        mShare = findViewById(R.id.share);
 
         //shuffle quotes
         mQuotes = getResources().getStringArray(R.array.quotes);
@@ -84,6 +85,18 @@ public class MainActivity extends AppCompatActivity {
             mNumber++;
             mTextQuote.setText(mQuotes[mNumber]);
             textToShare = mQuotes[mNumber];
+
+            //set text color
+            if ((mNumber > 5) && (mNumber <= 10)) {
+                mTextQuote.setTextColor(Color.parseColor("#7942bc")); //violet
+            } else if ((mNumber > 10) && (mNumber <= 15)) {
+                mTextQuote.setTextColor(Color.parseColor("#6dcc07")); //green
+            } else if ((mNumber > 15) && (mNumber <= 30)) {
+                mTextQuote.setTextColor(Color.parseColor("#ae283f")); //red
+            } else {
+                mTextQuote.setTextColor(Color.parseColor("#00BCD4")); //blue
+            }
+
         } else {
             mNumber = 0;
         }
