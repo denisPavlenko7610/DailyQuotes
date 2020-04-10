@@ -1,6 +1,8 @@
 package com.Denis7610.dailyquotes;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.Denis7610.dailyquotes.BroadcastReceiver.AlarmReceiver;
 import com.google.ads.consent.ConsentForm;
 import com.google.ads.consent.ConsentFormListener;
 import com.google.ads.consent.ConsentInfoUpdateListener;
@@ -27,6 +30,7 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,7 +55,73 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //ES policy
+        ESPolicy();
+
+        AddAdvertisement();
+
+        registerAlarm();
+
+        //find resources
+        mNextButton = findViewById(R.id.nextButton);
+        mPreviewButton = findViewById(R.id.previewButton);
+        mTextQuote = findViewById(R.id.textQuote);
+        mQuoteCount = findViewById(R.id.quoteCount);
+        mShare = findViewById(R.id.share);
+
+        //shuffle quotes
+        shuffleQuotes();
+        setQuote();
+
+        //set count of quotes
+
+        mQuoteCount.setText(getString(R.string.quote_count) + mQuotes.length);
+    }
+
+    private void registerAlarm() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 19); // hour
+        calendar.set(Calendar.MINUTE, 26);
+        calendar.set(Calendar.SECOND, 0);
+
+        Intent intent = new Intent(MainActivity.this, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast
+                (MainActivity.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) this.getSystemService(ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+        }
+    }
+
+    private void setQuote() {
+        //set first quote
+        mTextQuote.setText(mQuotes[mNumber]);
+        textToShare = mQuotes[mNumber];
+    }
+
+    private void AddAdvertisement() {
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-7173647303121367~7772462205");
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+
+        //show advertisement when user close an app
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                if (mInterstitialAd.isLoaded()) {
+                    mInterstitialAd.show();
+                } else {
+                    Log.d("TAG", "The interstitial wasn't loaded yet.");
+                }
+            }
+        });
+    }
+
+    private void ESPolicy() {
         ConsentInformation consentInformation = ConsentInformation.getInstance(getApplicationContext());
         String[] publisherIds = {"pub-7173647303121367"};
         consentInformation.requestConsentInfoUpdate(publisherIds, new ConsentInfoUpdateListener() {
@@ -116,8 +186,6 @@ public class MainActivity extends AppCompatActivity {
                                 .build();
                         form.load();
                     } //end code form
-                } else {
-                    //no code
                 }
             }
 
@@ -126,56 +194,19 @@ public class MainActivity extends AppCompatActivity {
                 // User's consent status failed to update.
             }
         });
+    }
 
-        // add advertisement
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {
-            }
-        });
-        mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-7173647303121367~7772462205");
-        mInterstitialAd.loadAd(new AdRequest.Builder().build());
-
-        //show advertisement when user close an app
-        mInterstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdClosed() {
-                if (mInterstitialAd.isLoaded()) {
-                    mInterstitialAd.show();
-                } else {
-                    Log.d("TAG", "The interstitial wasn't loaded yet.");
-                }
-            }
-        });
-
-        //find resources
-        mNextButton = findViewById(R.id.nextButton);
-        mPreviewButton = findViewById(R.id.previewButton);
-        mTextQuote = findViewById(R.id.textQuote);
-        mQuoteCount = findViewById(R.id.quoteCount);
-        mShare = findViewById(R.id.share);
-
-        //shuffle quotes
+    private void shuffleQuotes() {
         mQuotes = getResources().getStringArray(R.array.quotes);
         List<String> list = Arrays.asList(mQuotes);
         Collections.shuffle(list);
         mQuotes = list.toArray(new String[list.size()]);
-
-        //set first quote
-        mTextQuote.setText(mQuotes[mNumber]);
-        textToShare = mQuotes[mNumber];
-
-        //set count of quotes
-
-        mQuoteCount.setText(getString(R.string.quote_count) + mQuotes.length);
     }
 
     public void nextQuote(View view) {
         if (mNumber != mQuotes.length) {
             mNumber++;
-            mTextQuote.setText(mQuotes[mNumber]);
-            textToShare = mQuotes[mNumber];
+            setQuote();
 
             //set text color
             if ((mNumber > 5) && (mNumber <= 10)) {
@@ -196,8 +227,7 @@ public class MainActivity extends AppCompatActivity {
     public void previewQuote(View view) {
         if (mNumber != 0) {
             mNumber--;
-            mTextQuote.setText(mQuotes[mNumber]);
-            textToShare = mQuotes[mNumber];
+            setQuote();
         }
     }
 
