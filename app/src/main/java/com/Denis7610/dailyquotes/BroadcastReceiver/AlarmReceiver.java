@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import com.Denis7610.dailyquotes.MainActivity;
 import com.Denis7610.dailyquotes.R;
@@ -22,7 +21,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         long when = System.currentTimeMillis();
-        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
+        NotificationManager notificationManagerCompat = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         Intent notificationIntent = new Intent(context, MainActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -34,8 +33,8 @@ public class AlarmReceiver extends BroadcastReceiver {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentTitle(context.getString(R.string.notification_title))
-                .setWhen(when)
                 .setAutoCancel(true)
+                .setWhen(when)
                 .setColor(context.getResources().getColor(R.color.blue))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
@@ -53,10 +52,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 
             notificationChannel.setDescription(description);
 
-            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-            if (notificationManager != null) {
-                notificationManager.createNotificationChannel(notificationChannel);
-            }
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(notificationChannel);
         }
     }
 }

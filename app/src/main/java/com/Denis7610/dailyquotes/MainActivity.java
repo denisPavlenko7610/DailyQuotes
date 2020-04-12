@@ -49,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
     private String textToShare;
     private int mNumber = 0;
 
+    private PendingIntent mPendingIntent;
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,11 +84,13 @@ public class MainActivity extends AppCompatActivity {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
 
-        Intent intent = new Intent(MainActivity.this, AlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast
-                (MainActivity.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarmManager = (AlarmManager) this.getSystemService(ALARM_SERVICE);
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+        if (calendar.getTimeInMillis() > System.currentTimeMillis()) {
+            Intent intent = new Intent(MainActivity.this, AlarmReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast
+                    (MainActivity.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarmManager = (AlarmManager) this.getSystemService(ALARM_SERVICE);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+        }
     }
 
     private void setQuote() {
